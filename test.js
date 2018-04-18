@@ -102,4 +102,23 @@ describe('dat-gateway', function () {
       throw e
     })
   })
+
+  it('should open a websocket to /peers', function () {
+    const req = http.get('http://localhost:5917/bunsen.hashbase.io/')
+    req.on('error', console.log)
+    const wsUrl = `ws://localhost:3000/peers`
+    try {
+      const socket = websocket(wsUrl, null, null)
+      socket.on('data', function (rawMsg) {
+        var str = String.fromCharCode.apply(null, rawMsg)
+        let msgArray = str.split(':')
+        let count = msgArray[msgArray.length - 1]
+        assert.ok(count > 0, 'count must be non-zero')
+        socket.destroy()
+      })
+    } catch (e) {
+      console.error(e)
+      throw e
+    }
+  })
 })
