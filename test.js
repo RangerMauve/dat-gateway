@@ -107,32 +107,20 @@ describe('dat-gateway', function () {
   it('should open a websocket to /peers', function () {
     const peers = `ws://localhost:5917/peers`
     let socket = null
-    return new Promise((resolve, reject) => {
-      // first populate repo with a dat.
-      axios.get('http://localhost:5917/bunsen.hashbase.io/')
-        .then(res => {
-          try {
-            socket = websocket(peers)
-            socket.on('data', function (rawMsg) {
-              var str = String.fromCharCode.apply(null, rawMsg)
-              let msgArray = str.split(':')
-              let count = msgArray[msgArray.length - 1]
-              // console.log('count: ' + count + ' str: ' + str)
-              assert.ok(count > 0, 'count must be non-zero')
-              return resolve(count)
-            })
-          } catch (e) {
-            console.error(e)
-            reject(e)
-          }
+    // first populate repo with a dat.
+    return axios.get('http://localhost:5917/bunsen.hashbase.io/')
+      .then(res => {
+        socket = websocket(peers)
+        socket.on('data', function (rawMsg) {
+          var str = String.fromCharCode.apply(null, rawMsg)
+          let msgArray = str.split(':')
+          let count = msgArray[msgArray.length - 1]
+          assert.ok(count > 0, 'count must be non-zero')
         })
-    }).then((res) => {
-      // console.log(' res: ' + res)
-      socket.end()
-    }, (e) => {
-      socket.end()
-      console.error(e.message)
-      throw e
-    })
+      }, (e) => {
+        socket.end()
+        console.error(e.message)
+        throw e
+      })
   })
 })
