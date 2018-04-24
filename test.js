@@ -116,6 +116,7 @@ describe('dat-gateway', function () {
           let msgArray = str.split(':')
           let count = msgArray[msgArray.length - 1]
           assert.ok(count > 0, 'count must be non-zero')
+          socket.end()
         })
       }, (e) => {
         socket.end()
