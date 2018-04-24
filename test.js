@@ -7,6 +7,7 @@ const rimraf = require('rimraf')
 const hyperdrive = require('hyperdrive')
 const websocket = require('websocket-stream')
 const ram = require('random-access-memory')
+const axios = require('axios')
 
 const dir = 'fixtures'
 const ttl = 4000
@@ -16,7 +17,7 @@ describe('dat-gateway', function () {
   this.timeout(0)
 
   before(function () {
-    this.gateway = new DatGateway({ dir, ttl, period })
+    this.gateway = new DatGateway({dir, ttl, period})
     return this.gateway.load().then(() => {
       return this.gateway.listen(5917)
     })
@@ -104,21 +105,36 @@ describe('dat-gateway', function () {
   })
 
   it('should open a websocket to /peers', function () {
-    const req = http.get('http://localhost:5917/bunsen.hashbase.io/')
-    req.on('error', console.log)
-    const wsUrl = `ws://localhost:3000/peers`
-    try {
-      const socket = websocket(wsUrl, null, null)
-      socket.on('data', function (rawMsg) {
-        var str = String.fromCharCode.apply(null, rawMsg)
-        let msgArray = str.split(':')
-        let count = msgArray[msgArray.length - 1]
-        assert.ok(count > 0, 'count must be non-zero')
-        socket.destroy()
-      })
-    } catch (e) {
-      console.error(e)
+    let socket = null
+    return new Promise((resolve, reject) => {
+      // first populate repo with a dat.
+      axios.get('http://localhost:5917/bunsen.hashbase.io/')
+        .then(res => {
+          setTimeout(() => {
+            const wsUrl = `ws://localhost:5917/peers`
+            try {
+              socket = websocket(wsUrl, null, null)
+              socket.on('data', function (rawMsg) {
+                var str = String.fromCharCode.apply(null, rawMsg)
+                let msgArray = str.split(':')
+                let count = msgArray[msgArray.length - 1]
+                // console.log('count: ' + count + ' str: ' + str)
+                assert.ok(count > 0, 'count must be non-zero')
+                return resolve(count)
+              })
+            } catch (e) {
+              console.error(e)
+              reject(e)
+            }
+          }, 3000)
+        })
+    }).then((res) => {
+      console.log(' res: ' + res)
+      socket.end()
+    }, (e) => {
+      socket.end()
+      console.error(e.message)
       throw e
-    }
+    })
   })
 })
