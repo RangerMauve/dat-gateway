@@ -117,7 +117,7 @@ describe('dat-gateway', function () {
               var str = String.fromCharCode.apply(null, rawMsg)
               let msgArray = str.split(':')
               let count = msgArray[msgArray.length - 1]
-              console.log('count: ' + count + ' str: ' + str)
+              // console.log('count: ' + count + ' str: ' + str)
               assert.ok(count > 0, 'count must be non-zero')
               return resolve(count)
             })
@@ -127,7 +127,7 @@ describe('dat-gateway', function () {
           }
         })
     }).then((res) => {
-      console.log(' res: ' + res)
+      // console.log(' res: ' + res)
       socket.end()
     }, (e) => {
       socket.end()
