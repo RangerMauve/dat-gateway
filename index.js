@@ -145,6 +145,7 @@ class DatGateway extends DatLibrarian {
         let address = isRedirecting ? hexTo32.decode(subdomain) : pathParts[0]
         let path = (isRedirecting ? pathParts : pathParts.slice(1)).join('/')
 
+        const logError = (err, end) => log('[%s] %s %s | ERROR %s [%i ms]', address, req.method, path, err.message, end - start)
         log('[%s] %s %s', address, req.method, path)
 
         // return index
@@ -166,8 +167,10 @@ class DatGateway extends DatLibrarian {
             res.writeHead(302)
             res.end()
           }).catch((e) => {
+            const end = Date.now()
+            logError(e, end)
             res.writeHead(500)
-            res.end(JSON.stringify(e))
+            res.end(e.message)
           })
         }
 
@@ -179,8 +182,10 @@ class DatGateway extends DatLibrarian {
             res.writeHead(200)
             res.end(`dat://${resolvedAddress}\nttl=3600`)
           }).catch((e) => {
+            const end = Date.now()
+            logError(e, end)
             res.writeHead(500)
-            res.end(JSON.stringify(e))
+            res.end(e.message)
           })
         }
 
@@ -193,13 +198,13 @@ class DatGateway extends DatLibrarian {
           dat.onrequest(req, res)
         }).catch((e) => {
           const end = Date.now()
-          log('[%s] %s %s | ERROR %s [%i ms]', address, req.method, path, e.message, end - start)
+          logError(e, end)
           if (e.message.indexOf('not found') > -1) {
             res.writeHead(404)
             res.end('Not found')
           } else {
             res.writeHead(500)
-            res.end(JSON.stringify(e))
+            res.end(e.message)
           }
         })
       }
