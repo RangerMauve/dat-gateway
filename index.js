@@ -10,6 +10,8 @@ const url = require('url')
 const hexTo32 = require('hex-to-32')
 
 const BASE_32_KEY_LENGTH = 52
+const ERR_404 = 'Not found'
+const ERR_500 = 'Server error'
 
 function log () {
   let msg = arguments[0]
@@ -170,7 +172,7 @@ class DatGateway extends DatLibrarian {
             const end = Date.now()
             logError(e, end)
             res.writeHead(500)
-            res.end(e.message)
+            res.end(ERR_500)
           })
         }
 
@@ -185,7 +187,7 @@ class DatGateway extends DatLibrarian {
             const end = Date.now()
             logError(e, end)
             res.writeHead(500)
-            res.end(e.message)
+            res.end(ERR_500)
           })
         }
 
@@ -201,10 +203,10 @@ class DatGateway extends DatLibrarian {
           logError(e, end)
           if (e.message.indexOf('not found') > -1) {
             res.writeHead(404)
-            res.end('Not found')
+            res.end(ERR_404)
           } else {
             res.writeHead(500)
-            res.end(e.message)
+            res.end(ERR_500)
           }
         })
       }
